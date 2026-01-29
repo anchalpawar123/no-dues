@@ -1,0 +1,95 @@
+.slider-container {
+  width: 100%;
+  max-width: 2200px;
+  height: 500px;
+  overflow: hidden;
+  margin: auto;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.slider {
+  display: flex;
+  width: 500%;
+  height: 100%;
+  transition: transform 1s ease-in-out;
+}
+
+.slide {
+  width: 20%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  background-size: cover;
+  background-position: center;
+}
+
+.slide1 {
+  background-image:
+    linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)),
+    url("/images/slide1.jpg");
+}
+
+.slide2 {
+  background-image:
+    linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)),
+    url("/images/slide2.webp");
+}
+
+.slide3 {
+  background-image:
+    linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)),
+    url("/images/slide3.jpg");
+}
+
+.slide4 {
+  background-image:
+    linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)),
+    url("/images/slide4.jpg");
+}
+
+.slide5 {
+  background-image:
+    linear-gradient(rgba(0,0,0,.3), rgba(0,0,0,.3)),
+    url("https://assets.collegedunia.com/public/image/Screenshot_521__e248bd09f4f4ca90e28a49eaecb36fa5.png");
+}
+
+.slide-text {
+  text-align: center;
+  max-width: 80%;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.subtitle {
+  font-size: 1.4rem;
+}
+
+/* ABOUT */
+.about-section {
+  padding: 50px 20px;
+  text-align: center;
+}
+
+/* FEATURES */
+.features-section {
+  padding: 50px 20px;
+  background: #e6f3ff;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
