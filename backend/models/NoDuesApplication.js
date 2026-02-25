@@ -43,17 +43,7 @@ const noDuesSchema = new mongoose.Schema(
 
 
 
-    // ===== EXAM DETAILS (ADD HERE) =====
-examStatus: {
-  type: String,
-  enum: ["regular", "backlog", "sem_break", "year_break"],
-  default: "regular",
-},
-
-examRemark: {
-  type: String,
-  default: "",
-},
+    
     // ✅ YAHI ADD KARNA HAI
     isHosteller: {
       type: Boolean,
@@ -63,7 +53,10 @@ examRemark: {
       type: Boolean,
       default: false,
     },
-
+isScholarshipHolder: {
+  type: Boolean,
+  default: false,
+},
     departments: [departmentSchema], // ⭐ single source of truth
 
     // hod

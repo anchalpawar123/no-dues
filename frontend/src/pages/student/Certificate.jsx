@@ -46,7 +46,7 @@ export default function NoDuesCertificate() {
   const element = document.getElementById("certificate");
 
   const options = {
-    margin: [10, 10, 10, 10], // mm
+    margin: 0,
     filename: `No_Dues_${certificateData.rollNumber}.pdf`,
     image: { type: "jpeg", quality: 1 },
     html2canvas: {
@@ -116,16 +116,20 @@ export default function NoDuesCertificate() {
       </div>
 
       {/* Certificate - A4 Size */}
-       <div className="bg-gray-100 print:bg-white">
+        <div className="print:bg-white">
 
-        <div id="certificate"
-        className="certificate-container max-w-4xl mx-auto bg-white shadow-lg print:shadow-none" 
-         style={{
+         <div
+  id="certificate"
+  className="certificate-container bg-white print:shadow-none mx-auto"
+  style={{
     width: "210mm",
     minHeight: "297mm",
-     padding: "5mm",
-    margin: "0 auto",
-  }}>
+    padding: "15mm",
+    margin: "20px auto",
+    boxSizing: "border-box",
+    overflow: "hidden",
+  }}
+>
           {/* Certificate Content */}
           <div className="p-0">
 
@@ -141,7 +145,7 @@ export default function NoDuesCertificate() {
 <div className="flex justify-center  mb-2 mt-0
 ">
   <img
-    src="/CollegeLogo.jpg"
+    src="/college-logo.png"
     alt="College Logo"
     className="h-20 md:h-24 w-auto object-contain"
   />

@@ -1,6 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
@@ -14,48 +15,36 @@ router.post("/login", async (req, res) => {
 
   try {
     /* ================= STUDENT ================= */
-    if (role === "student") {
-      const rollExists = await User.findOne({
-        rollNumber,
-        role: "student",
-      });
+   if (role === "student") {
+  const user = await User.findOne({
+    rollNumber,
+    role: "student",
+  });
 
-      const passwordExists = await User.findOne({
-        password,
-        role: "student",
-      });
+  if (!user) {
+    return res.status(400).json({ message: "Roll number is incorrect" });
+  }
 
-      if (!rollExists && !passwordExists) {
-        return res
-          .status(400)
-          .json({ message: "Roll number and password are incorrect" });
-      }
+  const isMatch = await bcrypt.compare(password, user.password);
 
-      if (!rollExists) {
-        return res
-          .status(400)
-          .json({ message: "Roll number is incorrect" });
-      }
+  if (!isMatch) {
+    return res.status(400).json({ message: "Password is incorrect" });
+  }
 
-      if (!passwordExists) {
-        return res
-          .status(400)
-          .json({ message: "Password is incorrect" });
-      }
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
 
-      const token = jwt.sign(
-        { id: rollExists._id, role: rollExists.role },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-      );
+  return res.json({
+    token,
+    role: user.role,
+    name: user.name,
+  });
+}
 
-       return res.json({
-  token,
-  role: rollExists.role,
-  name: rollExists.name,   // 👈 YAHI ADD KARNA HAI
-});
 
-    }
 
     /* ================= DEPARTMENT ================= */
    /* ================= DEPARTMENT ================= */
@@ -65,8 +54,9 @@ const departmentRoles = [
   "tp",
   "hostel",
   "sports",
+   "scholarship",
   "hod",
-  "exam",
+    
 ];
 
 if (departmentRoles.includes(role)) {

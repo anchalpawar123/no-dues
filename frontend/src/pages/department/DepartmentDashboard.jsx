@@ -6,7 +6,7 @@ import TpPanel from "./components/TpPanel";
 import HostelPanel from "./components/HostelPanel";
 import SportsPanel from "./components/SportsPanel";
 import HodPanel from "./components/HodPanel";
-import ExamPanel from "./components/ExamPanel";
+ import ScholarshipPanel from "./components/ScholarshipPanel";
 
 export default function DepartmentDashboard() {
   const { dept } = useParams();
@@ -19,8 +19,9 @@ export default function DepartmentDashboard() {
       {dept === "tp" && <TpPanel />}
       {dept === "hostel" && <HostelPanel />}
       {dept === "sports" && <SportsPanel />}
+      {dept === "scholarship" && <ScholarshipPanel />}
       {dept === "hod" && <HodPanel />}
-      {dept === "exam" && <ExamPanel />}
+      
      
     </>
   );

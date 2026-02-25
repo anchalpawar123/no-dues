@@ -47,15 +47,15 @@ router.get(
 );
 
 /* ================= ADD STUDENT ================= */
-router.post(
+ router.post(
   "/add-student",
   authMiddleware,
   roleMiddleware(["admin"]),
   async (req, res) => {
     try {
-      const { name, rollNumber, branch, email, password } = req.body;
+      const { name, rollNumber, branch, email } = req.body;
 
-      if (!name || !rollNumber || !branch || !password) {
+      if (!name || !rollNumber || !branch) {
         return res.status(400).json({ message: "Required fields missing" });
       }
 
@@ -64,9 +64,9 @@ router.post(
         return res.status(400).json({ message: "Student already exists" });
       }
 
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const hashedPassword = await bcrypt.hash(rollNumber, 10);
 
-      const student = await User.create({
+      await User.create({
         name,
         rollNumber,
         branch,

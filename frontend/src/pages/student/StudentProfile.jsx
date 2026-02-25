@@ -1,5 +1,11 @@
  export default function StudentProfile() {
-  const profilePic = localStorage.getItem("profilePic");
+   const profilePic =
+  localStorage.getItem("profilePic") &&
+  localStorage.getItem("profilePic") !== "null" &&
+  localStorage.getItem("profilePic") !== "undefined"
+    ? localStorage.getItem("profilePic")
+    : null;
+
 
   return (
     <div className="max-w-xl bg-white p-8 rounded-lg shadow">
@@ -9,12 +15,18 @@
 
         {/* PROFILE IMAGE */}
         <label className="relative cursor-pointer">
-          <img
-            src={profilePic || ""}
-            alt="Profile"
-            className={`w-32 h-32 rounded-full object-cover border 
-              ${profilePic ? "" : "bg-white"}`}
-          />
+          {profilePic ? (
+  <img
+    src={profilePic}
+    alt="Profile"
+    className="w-32 h-32 rounded-full object-cover border"
+  />
+) : (
+  <div className="w-32 h-32 rounded-full border flex items-center justify-center text-gray-500 font-medium">
+    Add Image
+  </div>
+)}
+
 
           {!profilePic && (
             <div className="absolute inset-0 flex items-center justify-center text-gray-500 font-medium">
@@ -32,8 +44,11 @@
 
               const reader = new FileReader();
               reader.onload = () => {
-                localStorage.setItem("profilePic", reader.result);
-                window.location.reload();
+              localStorage.setItem("profilePic", reader.result);
+setTimeout(() => {
+  window.location.reload();
+}, 100);
+
               };
               reader.readAsDataURL(file);
             }}

@@ -1,4 +1,4 @@
- import express from "express";
+  import express from "express";
 import NoDuesApplication from "../models/NoDuesApplication.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import roleMiddleware from "../middleware/roleMiddleware.js";
@@ -10,7 +10,7 @@ const router = express.Router();
 router.get(
   "/:dept",
   authMiddleware,
-  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "exam"]),
+  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "scholarship"]),
   async (req, res) => {
     try {
       const dept = req.params.dept;
@@ -24,8 +24,9 @@ router.get(
         },
       };
 
-      if (dept === "hostel") filter.isHosteller = true;
-      if (dept === "sports") filter.isSportsMember = true;
+//       if (dept === "hostel") filter.isHosteller = true;
+//       if (dept === "sports") filter.isSportsMember = true;
+// if (dept === "scholarship") filter.isScholarshipHolder = true;
 
       const apps = await NoDuesApplication.find(filter).sort({ createdAt: -1 });
       res.json(apps);
@@ -39,7 +40,7 @@ router.get(
 router.get(
   "/:dept/history",
   authMiddleware,
-  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "exam"]),
+  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "scholarship" ]),
   async (req, res) => {
     try {
       const dept = req.params.dept;
@@ -53,8 +54,9 @@ router.get(
         },
       };
 
-      if (dept === "hostel") filter.isHosteller = true;
-      if (dept === "sports") filter.isSportsMember = true;
+//       if (dept === "hostel") filter.isHosteller = true;
+//       if (dept === "sports") filter.isSportsMember = true;
+// if (dept === "scholarship") filter.isScholarshipHolder = true;
 
       const apps = await NoDuesApplication.find(filter).sort({ updatedAt: -1 });
       res.json(apps);
@@ -68,7 +70,7 @@ router.get(
  router.put(
   "/update/:id",
   authMiddleware,
-  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "exam"]),
+  roleMiddleware(["library", "accounts", "tp", "hostel", "sports", "scholarship"]),
   async (req, res) => {
     try {
       const { department, status, remark } = req.body;
@@ -102,4 +104,4 @@ router.get(
 );
 
 
-export default router;
+export default router;   

@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema(
     branch: {
       type: String,
     },
+    
+
 
     // ===== ADMIN / DEPARTMENT / HOD =====
     email: {
@@ -31,10 +33,10 @@ const userSchema = new mongoose.Schema(
       enum: [
         "library",
         "accounts",
-        "exam",
         "hostel",
         "sports",
         "tp",
+         "scholarship",
       ],
     },
 
@@ -42,12 +44,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+     profilePic: {
+  type: String,
+  default: "",
+},
 
     role: {
       type: String,
       required: true,
       enum: ["admin", "student", "department", "hod"],
     },
+    
+
   },
   { timestamps: true }
 );

@@ -58,7 +58,8 @@ if (backendRole === "student") {
     hostel: "/department/hostel",
     sports: "/department/sports",
     hod: "/department/hod",
-    exam: "/department/exam",
+    scholarship: "/department/scholarship",
+
   };
 
   const path = roleRoutes[backendRole];
@@ -124,8 +125,11 @@ if (path) {
 <option value="tp">Training & Placement</option>
 <option value="hostel">Hostel</option>
 <option value="sports">Sports</option>
+ <option value="scholarship">Scholarship</option>
+
+
 <option value="hod">HOD</option>
-<option value="exam">Exam</option>
+ 
 
 <option value="admin">Admin</option>
 

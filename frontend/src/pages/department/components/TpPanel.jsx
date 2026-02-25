@@ -1,5 +1,5 @@
  import { useEffect, useState } from "react";
-import { LayoutDashboard, Clock, History, CheckCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Clock, History, CheckCircle,CheckCircle2 , LogOut } from "lucide-react";
 import axios from "axios";
 
 export default function TPDashboard() {
@@ -409,7 +409,11 @@ export default function TPDashboard() {
                   </div>
                 ) : applications.length === 0 ? (
                   <div className="p-16 text-center">
-                    <div className="text-6xl mb-6 text-green-500">✅</div>
+                    {/* <div className="text-6xl mb-6 text-green-500">✅</div> */}
+                    <div className="flex justify-center mb-6">
+  <CheckCircle2 className="w-16 h-16 text-green-600" />
+</div>
+
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">All Clear!</h3>
                     <p className="text-gray-600 mb-4">No pending requests at the moment</p>
                     <p className="text-sm text-gray-500">New requests will appear here automatically</p>
@@ -530,7 +534,9 @@ export default function TPDashboard() {
                           </td>
                           <td className="px-6 py-4">
                             {getStatusBadge(
-                              app.departments.find((d) => d.name === "training-placement")?.status
+                              // app.departments.find((d) => d.name === "training-placement")?.status
+                              app.departments.find((d) => d.name === "tp")?.status
+
                             )}
                           </td>
                           <td className="px-6 py-4">

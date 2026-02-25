@@ -1,5 +1,5 @@
  import { useEffect, useState } from "react";
- import { LayoutDashboard, Clock, History ,CheckCircle,LogOut} from "lucide-react";
+ import { LayoutDashboard, Clock, History ,CheckCircle,LogOut,CheckCircle2} from "lucide-react";
 
 import axios from "axios";
 
@@ -432,7 +432,11 @@ export default function LibraryDashboard() {
                   </div>
                 ) : applications.length === 0 ? (
                   <div className="p-16 text-center">
-                    <div className="text-6xl mb-6 text-green-500">✅</div>
+                    {/* <div className="text-6xl mb-6 text-green-500">✅</div> */}
+                    <div className="flex justify-center mb-6">
+  <CheckCircle2 className="w-16 h-16 text-green-600" />
+</div>
+
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">All Clear!</h3>
                     <p className="text-gray-600 mb-4">No pending applications at the moment</p>
                     <p className="text-sm text-gray-500">New applications will appear here automatically</p>

@@ -1,5 +1,5 @@
  import { useEffect, useState } from "react";
-import { LayoutDashboard, Clock, History, CheckCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, Clock, History, CheckCircle, LogOut,CheckCircle2 } from "lucide-react";
 import axios from "axios";
 
 export default function AccountsDashboard() {
@@ -412,7 +412,10 @@ export default function AccountsDashboard() {
                   </div>
                 ) : applications.length === 0 ? (
                   <div className="p-16 text-center">
-                    <div className="text-6xl mb-6 text-green-500">✅</div>
+                    <div className="flex justify-center mb-6">
+  <CheckCircle2 className="w-16 h-16 text-green-600" />
+</div>
+
                     <h3 className="text-2xl font-bold text-gray-800 mb-2">All Clear!</h3>
                     <p className="text-gray-600 mb-4">No pending requests at the moment</p>
                     <p className="text-sm text-gray-500">New requests will appear here automatically</p>
@@ -602,30 +605,7 @@ export default function AccountsDashboard() {
                 </div>
               </div>
 
-              {/* Fee Details */}
-              <div className="mb-6">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Fee Details</h4>
-                <div className="bg-blue-50 border border-blue-100 rounded p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-xs text-gray-600 mb-1">Total Fees</p>
-                      <p className="text-lg font-bold text-gray-800">₹{selectedApp.totalFees || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 mb-1">Paid Fees</p>
-                      <p className="text-lg font-bold text-green-600">₹{selectedApp.paidFees || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 mb-1">Fine (if any)</p>
-                      <p className="text-lg font-bold text-red-600">₹{selectedApp.fine || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-600 mb-1">Pending Fees</p>
-                      <p className="text-lg font-bold text-orange-600">₹{calculatePendingFees(selectedApp)}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              
 
               {/* Accounts Clearance Checklist */}
               <div className="mb-6">
