@@ -7,7 +7,7 @@ import HostelPanel from "./components/HostelPanel";
 import SportsPanel from "./components/SportsPanel";
 import HodPanel from "./components/HodPanel";
  import ScholarshipPanel from "./components/ScholarshipPanel";
-
+ 
 export default function DepartmentDashboard() {
   const { dept } = useParams();
 

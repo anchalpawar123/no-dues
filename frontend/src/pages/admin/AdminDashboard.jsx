@@ -62,7 +62,8 @@ export default function AdminDashboard() {
   const [hodForm, setHodForm] = useState({
     name: "",
     email: "",
-    password: ""
+    password: "",
+    branch: "" 
   });
 
   // Delete confirmation modal
@@ -164,33 +165,30 @@ export default function AdminDashboard() {
   };
 
   const handleBulkUpload = async () => {
-    if (csvPreview.length === 0) {
-      alert("⚠️ Please upload a CSV file first!");
-      return;
-    }
+  if (csvPreview.length === 0) {
+    alert("⚠️ Please upload a CSV file first!");
+    return;
+  }
 
-    try {
-      // This would be your bulk upload API call
-      // const res = await axios.post(
-      //   "http://localhost:5000/api/admin/bulk-upload-students",
-      //   { students: csvPreview },
-      //   { headers: { Authorization: `Bearer ${token}` } }
-      // );
-      
-      // Simulated result for demo
-      setUploadResult({
-        success: csvPreview.length - 1,
-        failed: 1,
-        total: csvPreview.length
-      });
-      
-      alert("✅ Bulk upload completed!");
-      fetchDashboardStats();
-    } catch (err) {
-      alert("❌ Bulk upload failed: " + (err.response?.data?.message || "Error"));
-      console.error(err);
-    }
-  };
+  try {
+    const res = await axios.post(
+      "http://localhost:5000/api/admin/bulk-upload-students",
+      { students: csvPreview },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setUploadResult(res.data);
+
+    alert("✅ Bulk upload completed!");
+
+    fetchDashboardStats();
+    fetchUsers();
+
+  } catch (err) {
+    alert("❌ Bulk upload failed");
+    console.error(err);
+  }
+};
 
   const handleAddDepartment = async (e) => {
     e.preventDefault();
@@ -208,6 +206,7 @@ export default function AdminDashboard() {
       alert("✅ Department added successfully!");
       setDeptForm({ departmentName: "", email: "", password: "" });
       fetchDashboardStats();
+      window.location.reload();
     } catch (err) {
       alert("❌ Failed to add department: " + (err.response?.data?.message || "Error"));
       console.error(err);
@@ -216,7 +215,7 @@ export default function AdminDashboard() {
 
   const handleAddHOD = async (e) => {
     e.preventDefault();
-    if (!hodForm.name || !hodForm.email || !hodForm.password) {
+    if (!hodForm.name || !hodForm.email || !hodForm.password || !hodForm.branch) {
       alert("⚠️ Please fill all fields!");
       return;
     }
@@ -267,9 +266,9 @@ export default function AdminDashboard() {
     setDeptForm({ departmentName: "", email: "", password: "" });
   };
 
-  const resetHODForm = () => {
-    setHodForm({ name: "", email: "", password: "" });
-  };
+   const resetHODForm = () => {
+  setHodForm({ name: "", email: "", password: "", branch: "" });
+};
 
   const resetBulkUpload = () => {
     setCsvFile(null);
@@ -278,16 +277,29 @@ export default function AdminDashboard() {
   };
 
   // Filter users based on search and role
-  const filteredUsers = users.filter(user => {
-    const matchesSearch = 
-      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.rollNumber?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    
-    return matchesSearch && matchesRole;
-  });
+  const departmentRoles = ["library","accounts","tp","hostel","sports","scholarship"];
+
+const filteredUsers = users.filter(user => {
+
+  const matchesSearch =
+    user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    user.rollNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+
+  let matchesRole = true;
+
+  if (roleFilter === "student") {
+    matchesRole = user.role === "student";
+  } 
+  else if (roleFilter === "hod") {
+    matchesRole = user.role === "hod";
+  } 
+  else if (roleFilter === "department") {
+    matchesRole = departmentRoles.includes(user.role);
+  }
+
+  return matchesSearch && matchesRole;
+});
 
   // Pagination logic
   const indexOfLastUser = currentPage * usersPerPage;
@@ -551,6 +563,9 @@ export default function AdminDashboard() {
                             <option value="ME">Mechanical Engineering</option>
                             <option value="CE">Civil Engineering</option>
                             <option value="EE">Electrical Engineering</option>
+                            <option value="IT">Information Technology</option>
+<option value="AIDS">Artificial Intelligence & Data Science</option>
+<option value="CSIT">Computer Science & Information Technology</option>
                           </select>
                         </div>
 
@@ -850,6 +865,27 @@ export default function AdminDashboard() {
                       />
                     </div>
 
+{/* Branch */}
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-2">
+    Branch <span className="text-red-500">*</span>
+  </label>
+  <select
+    value={hodForm.branch}
+    onChange={(e) => setHodForm({ ...hodForm, branch: e.target.value })}
+    className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+  >
+    <option value="">Select Branch</option>
+    <option value="CSE">Computer Science Engineering</option>
+    <option value="ECE">Electronics & Communication</option>
+    <option value="ME">Mechanical Engineering</option>
+    <option value="CE">Civil Engineering</option>
+    <option value="EE">Electrical Engineering</option>
+    <option value="IT">Information Technology</option>
+<option value="AIDS">Artificial Intelligence & Data Science</option>
+<option value="CSIT">Computer Science & Information Technology</option>
+  </select>
+</div>
                     {/* Password */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -966,7 +1002,8 @@ export default function AdminDashboard() {
                             </td>
                             <td className="px-6 py-4">
                               <div className="text-sm text-gray-900">
-                                {user.department || user.branch || '-'}
+                                {/* {user.department || user.branch || '-'} */}
+                                {user.department || user.branch || user.role || '-'}
                               </div>
                             </td>
                             <td className="px-6 py-4">

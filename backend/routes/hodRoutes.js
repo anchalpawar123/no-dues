@@ -4,8 +4,11 @@ import roleMiddleware from "../middleware/roleMiddleware.js";
 import NoDuesApplication from "../models/NoDuesApplication.js";
 import Notification from "../models/Notification.js";
 import nodemailer from "nodemailer";
+ 
+import PDFDocument from "pdfkit";
+import fs from "fs";
+import path from "path";
 const router = express.Router();
-
 /* ================= PENDING FOR HOD ================= */
   router.get(
   "/pending",
@@ -13,9 +16,10 @@ const router = express.Router();
   roleMiddleware(["hod"]),
   async (req, res) => {
     try {
-      const apps = await NoDuesApplication.find({
-        finalStatus: "pending",
-      }).sort({ createdAt: -1 });
+       const apps = await NoDuesApplication.find({
+  finalStatus: "pending",
+  branch: { $regex: new RegExp(`^${req.user.branch}$`, "i") },
+}).sort({ createdAt: -1 });
 
       const readyForHOD = apps.filter(app =>
         Array.isArray(app.departments) &&
@@ -47,7 +51,11 @@ router.put(
   async (req, res) => {
     try {
       const app = await NoDuesApplication.findById(req.params.id);
-
+ if (app.branch.toLowerCase() !== req.user.branch.toLowerCase())  {
+  return res.status(403).json({
+    message: "You cannot approve other branch application",
+  });
+}
       if (!app) {
         return res.status(404).json({ message: "Application not found" });
       }
@@ -82,13 +90,65 @@ router.put(
       });
 
       // 📧 SEND MAIL (ONLY AFTER HOD APPROVE)
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.MAIL_USER,
-          pass: process.env.MAIL_PASS,
-        },
-      });
+     // 📧 SEND MAIL WITH PDF ATTACHMENT
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.MAIL_USER,
+    pass: process.env.MAIL_PASS,
+  },
+});
+
+// 🔹 Ensure certificates folder exists
+const dirPath = path.join("certificates");
+if (!fs.existsSync(dirPath)) {
+  fs.mkdirSync(dirPath);
+}
+
+// 🔹 Create file path
+const filePath = path.join(dirPath, `${app.rollNumber}_NoDues.pdf`);
+
+const doc = new PDFDocument();
+doc.pipe(fs.createWriteStream(filePath));
+
+// 🔹 PDF Content
+doc.fontSize(20).text("NO DUES CERTIFICATE", { align: "center" });
+doc.moveDown();
+doc.fontSize(14).text(`Name: ${app.name}`);
+doc.text(`Roll Number: ${app.rollNumber}`);
+doc.text(`Branch: ${app.branch}`);
+doc.text(`Approved By HOD`);
+doc.text(`Date: ${new Date().toLocaleDateString()}`);
+
+doc.end();
+
+// Wait a moment to ensure file is written
+await new Promise(resolve => setTimeout(resolve, 1000));
+
+// 🔹 Send Mail with Attachment
+await transporter.sendMail({
+  from: process.env.MAIL_USER,
+  to: app.email,
+  subject: "No Dues Certificate Approved",
+  text: `Hello ${app.name},
+
+Your No Dues has been approved.
+
+Certificate is attached with this email.
+
+Regards,
+College Administration`,
+  attachments: [
+    {
+      filename: `${app.rollNumber}_NoDues.pdf`,
+      path: filePath,
+    },
+  ],
+});
+
+// 🔹 Delete file after sending (server clean rahega)
+fs.unlinkSync(filePath);
 
       await transporter.sendMail({
         from: process.env.MAIL_USER,
@@ -124,8 +184,9 @@ router.get(
   roleMiddleware(["hod"]),
   async (req, res) => {
     const apps = await NoDuesApplication.find({
-      hodStatus: { $in: ["approved", "rejected"] },
-    });
+  hodStatus: { $in: ["approved", "rejected"] },
+  branch: { $regex: new RegExp(`^${req.user.branch}$`, "i") },
+}).sort({ updatedAt: -1 });
 
     res.json(apps);
   }

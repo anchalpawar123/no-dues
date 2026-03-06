@@ -1,7 +1,7 @@
 import express from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
-import bcrypt from "bcryptjs";
+ import bcrypt from "bcryptjs";
 
 const router = express.Router();
 
@@ -25,11 +25,11 @@ router.post("/login", async (req, res) => {
     return res.status(400).json({ message: "Roll number is incorrect" });
   }
 
-  const isMatch = await bcrypt.compare(password, user.password);
-
-  if (!isMatch) {
-    return res.status(400).json({ message: "Password is incorrect" });
-  }
+   if (password !== rollNumber) {
+  return res.status(400).json({
+    message: "Password is incorrect",
+  });
+}
 
   const token = jwt.sign(
     { id: user._id, role: user.role },
@@ -48,16 +48,47 @@ router.post("/login", async (req, res) => {
 
     /* ================= DEPARTMENT ================= */
    /* ================= DEPARTMENT ================= */
-const departmentRoles = [
+ const departmentRoles = [
   "library",
   "accounts",
   "tp",
   "hostel",
   "sports",
-   "scholarship",
+  "scholarship",
   "hod",
-    
 ];
+
+if (departmentRoles.includes(role)) {
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(400).json({ message: "Email is incorrect" });
+  }
+
+  let isMatch = false;
+
+  if (user.password.startsWith("$2")) {
+    isMatch = await bcrypt.compare(password, user.password);
+  } else {
+    isMatch = user.password === password;
+  }
+
+  if (!isMatch) {
+    return res.status(400).json({ message: "Password is incorrect" });
+  }
+
+  const token = jwt.sign(
+    { id: user._id, role: user.role },
+    process.env.JWT_SECRET,
+    { expiresIn: "1d" }
+  );
+
+  return res.json({
+    token,
+    role: user.role,
+  });
+}
 
 if (departmentRoles.includes(role)) {
   const emailExists = await User.findOne({

@@ -15,8 +15,11 @@ const userSchema = new mongoose.Schema(
     },
 
     branch: {
-      type: String,
-    },
+  type: String,
+  required: function () {
+    return this.role === "student" || this.role === "hod";
+  },
+},
     
 
 

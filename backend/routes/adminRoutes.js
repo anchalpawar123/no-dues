@@ -15,7 +15,9 @@ router.get(
   async (req, res) => {
     try {
       const totalStudents = await User.countDocuments({ role: "student" });
-      const totalDepartments = await User.countDocuments({ role: "department" });
+    const totalDepartments = await User.countDocuments({
+  role: { $in: ["library","accounts","tp","hostel","sports","scholarship"] }
+});
       const totalHODs = await User.countDocuments({ role: "hod" });
       const totalApplications = await NoDuesApplication.countDocuments();
 
@@ -102,14 +104,27 @@ router.post(
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      await User.create({
-        name: departmentName,
-        email,
-        password: hashedPassword,
-        role: "department",
-        department: departmentName.toLowerCase(),
-      });
+      // await User.create({
+      //   name: departmentName,
+      //   email,
+      //   password: hashedPassword,
+      //   role: "department",
+        
+      //   // department: departmentName.toLowerCase(),
+      //   department: deptValue,
+      // });
+let deptValue = departmentName.toLowerCase();
 
+if (deptValue === "training & placement") {
+  deptValue = "tp";
+}
+
+await User.create({
+  name: departmentName,
+  email,
+  password: hashedPassword,
+  role: deptValue,
+});
       res.json({ message: "Department added successfully" });
     } catch (err) {
       res.status(500).json({ message: "Server error" });
@@ -124,11 +139,12 @@ router.post(
   roleMiddleware(["admin"]),
   async (req, res) => {
     try {
-      const { name, email, password } = req.body;
+      // const { name, email, password } = req.body;
+      const { name, email, password, branch } = req.body;
 
-      if (!name || !email || !password) {
-        return res.status(400).json({ message: "All fields required" });
-      }
+       if (!name || !email || !password || !branch) {
+  return res.status(400).json({ message: "All fields including branch required" });
+}
 
       const exists = await User.findOne({ email });
       if (exists) {
@@ -136,12 +152,13 @@ router.post(
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-
+ 
       await User.create({
         name,
         email,
         password: hashedPassword,
         role: "hod",
+         branch, // ✅ ADD THIS
       });
 
       res.json({ message: "HOD added successfully" });
@@ -166,4 +183,61 @@ router.delete(
   }
 );
 
+/* ================= BULK UPLOAD STUDENTS ================= */
+  router.post(
+  "/bulk-upload-students",
+  authMiddleware,
+  roleMiddleware(["admin"]),
+  async (req, res) => {
+    try {
+
+      const students = req.body.students;
+
+      if (!students || students.length === 0) {
+        return res.status(400).json({ message: "No students provided" });
+      }
+
+      let success = 0;
+      let failed = 0;
+
+      for (const student of students) {
+        try {
+
+          const exists = await User.findOne({ rollNumber: student.rollNumber });
+
+          if (exists) {
+            failed++;
+            continue;
+          }
+
+          const hashedPassword = await bcrypt.hash(student.rollNumber, 10);
+
+          await User.create({
+            name: student.name,
+            rollNumber: student.rollNumber,
+            branch: student.branch,
+            email: student.email,
+            password: hashedPassword,
+            role: "student"
+          });
+
+          success++;
+
+        } catch (err) {
+          failed++;
+        }
+      }
+
+      res.json({
+        total: students.length,
+        success,
+        failed
+      });
+
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+);
 export default router;

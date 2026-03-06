@@ -155,33 +155,58 @@ router.get("/notifications", auth, async (req, res) => {
 
 
 /* ================= RESUBMIT APPLICATION ================= */
-router.put("/resubmit/:id", auth, async (req, res) => {
+ router.put("/resubmit/:id", auth, async (req, res) => {
   try {
+    const { department } = req.body;
+
     const app = await NoDuesApplication.findById(req.params.id);
 
     if (!app) {
-      return res.status(404).json({ message: "Application not found" });
+      return res.status(404).json({
+        message: "Application not found",
+      });
     }
 
-    // ✅ security: sirf wahi student resubmit kare
+    // security check
     if (app.studentId.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "Not allowed" });
+      return res.status(403).json({
+        message: "Not allowed",
+      });
     }
 
-    // 🔁 sirf rejected departments ko pending banao
-    app.departments.forEach((d) => {
-      if (d.status === "rejected") {
-        d.status = "pending";
-        d.remark = "";
-        d.updatedAt = new Date();
-      }
-    });
+    // find specific department
+    const deptObj = app.departments.find(
+      (d) => d.name === department
+    );
+
+    if (!deptObj) {
+      return res.status(404).json({
+        message: "Department not found",
+      });
+    }
+
+    if (deptObj.status !== "rejected") {
+      return res.status(400).json({
+        message: "Department is not rejected",
+      });
+    }
+
+    // update only selected department
+    deptObj.status = "pending";
+    deptObj.remark = "";
+    deptObj.updatedAt = new Date();
 
     await app.save();
 
-    res.json({ message: "Resubmitted successfully" });
+    res.json({
+      message: `${department} resubmitted successfully`,
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    console.error(err);
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 });
 

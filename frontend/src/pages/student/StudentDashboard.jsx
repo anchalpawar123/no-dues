@@ -1,17 +1,31 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StudentProfile from "./StudentProfile";
+ 
 import axios from "axios";
 const token = localStorage.getItem("token");
+
 export default function StudentDashboard() {
   const [notifications, setNotifications] = useState([]);
   const [activePage, setActivePage] = useState("dashboard");
+   const [profilePic, setProfilePic] = useState("");
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.clear();
     navigate("/login");
   };
-
+ 
+  useEffect(() => {
+  axios
+    .get("http://localhost:5000/api/student/profile", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+    .then((res) => {
+      setProfilePic(res.data.profilePic);
+    });
+}, []);
   return (
     <div className="min-h-screen flex bg-gray-50">
       {/* ================= SIDEBAR ================= */}
@@ -23,51 +37,77 @@ export default function StudentDashboard() {
 
         <div className="p-4 border-b border-blue-500 flex flex-col items-center">
           {/* PROFILE IMAGE */}
-          <label className="relative cursor-pointer">
-            <img
-              src={localStorage.getItem("profilePic") || ""}
-              alt="Profile"
-              className={`w-20 h-20 rounded-full object-cover border 
-        ${localStorage.getItem("profilePic") ? "" : "bg-white"}`}
-            />
+          
+ <label className="relative cursor-pointer">
 
-            {/* ADD IMAGE TEXT */}
-            {!localStorage.getItem("profilePic") && (
-              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500 font-medium">
-                Add Image
-              </div>
-            )}
+  <img
+    src={profilePic || ""}
+    className="w-20 h-20 rounded-full object-cover border bg-white"
+  />
 
-            {/* FILE INPUT */}
-            <input
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (!file) return;
+  {!profilePic && (
+    <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500">
+      Add Image
+    </div>
+  )}
 
-                const reader = new FileReader();
-                reader.onload = () => {
-                  localStorage.setItem("profilePic", reader.result);
-                  window.location.reload();
-                };
-                reader.readAsDataURL(file);
-              }}
-            />
-          </label>
+  <input
+    type="file"
+    accept="image/*"
+    className="hidden"
+    onChange={(e) => {
 
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = async () => {
+
+        await axios.put(
+          "http://localhost:5000/api/student/profile-pic",
+          { image: reader.result },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        setProfilePic(reader.result);
+
+      };
+
+      reader.readAsDataURL(file);
+
+    }}
+  />
+
+</label>
           {/* REMOVE IMAGE BUTTON (sirf tab dikhe jab image ho) */}
-          {localStorage.getItem("profilePic") && (
+          {/* {localStorage.getItem("profilePic") && ( */}
+          {profilePic && (
+             
             <button
-              onClick={() => {
-                localStorage.removeItem("profilePic");
-                window.location.reload();
-              }}
-              className="mt-2 text-xs text-red-600 hover:underline"
-            >
-              Remove Image
-            </button>
+  onClick={async () => {
+    await axios.put(
+      "http://localhost:5000/api/student/profile-pic",
+      { image: "" },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
+
+    setProfilePic("");
+  }}
+  //  className="mt-2 text-xs text-gray-200 hover:underline"
+  // className="mt-2 text-xs text-yellow-300 hover:underline"
+  className="mt-2 text-xs text-gray-200 hover:text-white hover:underline"
+>
+  Remove Image
+</button>
           )}
 
           {/* NAME + ROLL */}
@@ -472,6 +512,9 @@ function ApplyNoDues() {
                   <option value="ME">Mechanical Engineering</option>
                   <option value="CE">Civil Engineering</option>
                   <option value="EE">Electrical Engineering</option>
+                  <option value="IT">Information Technology</option>
+  <option value="AIDS">Artificial Intelligence & Data Science</option>
+  <option value="CSIT">Computer Science & Information Technology</option>
                 </SelectField>
 
                 <SelectField
@@ -672,8 +715,11 @@ function ViewStatus() {
         const statusObj = {};
 
         // departments status
-        res.data.departments.forEach((d) => {
-  statusObj[d.name] = d.status;
+         res.data.departments.forEach((d) => {
+  statusObj[d.name] = {
+    status: d.status,
+    remark: d.remark,
+  };
 });
 
 setApplicationId(res.data._id);
@@ -698,7 +744,16 @@ setApplicationId(res.data._id);
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {ALL_DEPARTMENTS.map((dept) => {
-        const deptStatus = statusData[dept] || "pending";
+        const deptData = statusData[dept] || {};
+const deptStatus = deptData.status || "pending";
+const deptRemark = deptData.remark || "";
+
+const remarkColor =
+  deptStatus === "approved"
+    ? "text-green-600"
+    : deptStatus === "rejected"
+    ? "text-red-600"
+    : "text-yellow-600";
 
         const color =
           deptStatus === "approved"
@@ -723,26 +778,49 @@ setApplicationId(res.data._id);
                     {deptStatus}
                   </span>
                 </p>
+ {deptRemark && (
+  <p className={`text-sm mt-2 font-medium ${remarkColor}`}>
+    Remark: {deptRemark}
+  </p>
+)}
+              {deptStatus === "rejected" && deptRemark && (
+  <button
+    onClick={async () => {
 
-                {deptStatus === "rejected" && (
-                  <button
-                    onClick={async () => {
-                      await axios.put(
-                        `http://localhost:5000/api/student/resubmit/${applicationId}`,
-                        {},
-                        {
-                          headers: {
-                            Authorization: `Bearer ${localStorage.getItem("token")}`,
-                          },
-                        }
-                      );
-                      window.location.reload();
-                    }}
-                    className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                  >
-                    Fix & Resubmit
-                  </button>
-                )}
+      console.log("Application ID:", applicationId);
+      console.log("Department:", dept);
+
+      try {
+        await axios.put(
+          `http://localhost:5000/api/student/resubmit/${applicationId}`,
+          {
+            department: dept, // ✅ VERY IMPORTANT
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+
+        alert(`${dept} resubmitted successfully`);
+
+        window.location.reload();
+
+      } catch (err) {
+
+        console.error(err.response?.data || err.message);
+
+        alert(err.response?.data?.message || "Resubmit failed");
+
+      }
+
+    }}
+    className="mt-3 px-4 py-1.5 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+  >
+    Fix & Resubmit
+  </button>
+)}
               </div>
 
               <span

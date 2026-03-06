@@ -1,12 +1,24 @@
- export default function StudentProfile() {
-   const profilePic =
-  localStorage.getItem("profilePic") &&
-  localStorage.getItem("profilePic") !== "null" &&
-  localStorage.getItem("profilePic") !== "undefined"
-    ? localStorage.getItem("profilePic")
-    : null;
+ import { useState, useEffect } from "react";
+import axios from "axios";
+ 
+  export default function StudentProfile() {
+const [profilePic, setProfilePic] = useState("");
 
-
+useEffect(() => {
+  axios
+    .get("http://localhost:5000/api/student/profile", {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+    })
+    .then((res) => {
+      setProfilePic(res.data.profilePic);
+    });
+}, []);
+  
+   
+   
+ 
   return (
     <div className="max-w-xl bg-white p-8 rounded-lg shadow">
       <h1 className="text-3xl font-bold mb-6">My Profile</h1>
@@ -35,24 +47,32 @@
           )}
 
           <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (!file) return;
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
-              const reader = new FileReader();
-              reader.onload = () => {
-              localStorage.setItem("profilePic", reader.result);
-setTimeout(() => {
-  window.location.reload();
-}, 100);
+    const reader = new FileReader();
 
-              };
-              reader.readAsDataURL(file);
-            }}
-          />
+    reader.onload = async () => {
+      await axios.put(
+        "http://localhost:5000/api/student/profile-pic",
+        { image: reader.result },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      setProfilePic(reader.result);
+    };
+
+    reader.readAsDataURL(file);
+  }}
+/>
         </label>
 
         {profilePic && (
